@@ -17,6 +17,9 @@ public class CreateGameHandler : IRequestHandler<CreateGameQuery, bool>
     public async Task<bool> Handle(CreateGameQuery request, CancellationToken cancellationToken)
     {
         var query = new AddGameQuery(request.Name);
-        return await _queryExecutor.ExecuteAsync(query, cancellationToken);
+        var result = await _queryExecutor.ExecuteAsync(query, cancellationToken);
+        await _queryExecutor.CommitAsync(cancellationToken);
+
+        return result;
     }
 }

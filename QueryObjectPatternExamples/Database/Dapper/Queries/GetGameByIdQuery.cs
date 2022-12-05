@@ -14,7 +14,7 @@ public class GetGameByIdQuery : IDbQuery<Game>
         GameId = gameId;
     }
 
-    public async Task<Game> ExecuteAsync(IDbConnection connection, CancellationToken cancellationToken)
+    public async Task<Game> ExecuteAsync(IDbConnection connection, IDbTransaction transaction, CancellationToken cancellationToken)
     {
         const string sql = $@"
         SELECT TOP (1)
@@ -26,6 +26,7 @@ public class GetGameByIdQuery : IDbQuery<Game>
         var command = new CommandDefinition(
             commandText: sql,
             parameters: this,
+            transaction: transaction,
             cancellationToken: cancellationToken
         );
         var gameRecord = await connection.QueryFirstOrDefaultAsync<Game?>(command);

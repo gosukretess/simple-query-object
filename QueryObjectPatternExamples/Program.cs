@@ -2,7 +2,6 @@ using System.Reflection;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QueryObjectPatternExamples.Database.Dapper.Infrastructure;
-using QueryObjectPatternExamples.Database.EntityFramework;
 using QueryObjectPatternExamples.Database.EntityFramework.Infrastructure;
 
 namespace QueryObjectPatternExamples
@@ -23,13 +22,14 @@ namespace QueryObjectPatternExamples
             builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 
             // DAPPER executor
-            builder.Services.AddSingleton<IQueryExecutor, QueryExecutor>();
+            builder.Services.AddScoped<IDbContext>(_ => new DapperContext(config.GetValue<string>("ConnectionString")));
+            builder.Services.AddScoped<IQueryExecutor, QueryExecutor>();
 
 
             // EF connection and executor
             var efContextOptions = new DbContextOptionsBuilder<EfContext>().UseSqlServer(config.GetValue<string>("ConnectionString")).Options;
             builder.Services.AddTransient(c => new EfContext(efContextOptions));
-            builder.Services.AddSingleton<IEfQueryExecutor, EfQueryExecutor<EfContext>>();
+            builder.Services.AddScoped<IEfQueryExecutor, EfQueryExecutor<EfContext>>();
 
 
             builder.Services.AddEndpointsApiExplorer();

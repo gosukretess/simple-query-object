@@ -1,27 +1,23 @@
-﻿using System.Data;
-using Microsoft.Data.SqlClient;
-
-namespace QueryObjectPatternExamples.Database.Dapper.Infrastructure;
-
-public interface IQueryExecutor
-{
-    public Task<TResult> ExecuteAsync<TResult>(IDbQuery<TResult> query, CancellationToken cancellationToken);
-}
+﻿namespace QueryObjectPatternExamples.Database.Dapper.Infrastructure;
 
 public class QueryExecutor : IQueryExecutor
 {
-    private readonly IConfiguration _configuration;
+    private readonly IDbContext _dbContext;
 
-    public QueryExecutor(IConfiguration configuration)
+    public QueryExecutor(IDbContext dbContext)
     {
-        _configuration = configuration;
+        _dbContext = dbContext;
     }
 
-    // Very simple executor, just creating connection and executing query on database
     public async Task<TResult> ExecuteAsync<TResult>(IDbQuery<TResult> query, CancellationToken cancellationToken)
     {
-        var connectionString = _configuration.GetValue<string>("ConnectionString");
-        using IDbConnection connection = new SqlConnection(connectionString);
-        return await query.ExecuteAsync(connection, cancellationToken);
+        var connection = await _dbContext.GetDbConnectionAsync(cancellationToken);
+        var transaction = await _dbContext.GetTransactionAsync(cancellationToken);
+        return await query.ExecuteAsync(connection, transaction, cancellationToken);
+    }
+
+    public async Task CommitAsync(CancellationToken cancellationToken)
+    {
+        await _dbContext.CommitAsync(cancellationToken);
     }
 }

@@ -13,7 +13,7 @@ public class AddGameQuery : IDbQuery<bool>
         Name = name;
     }
 
-    public async Task<bool> ExecuteAsync(IDbConnection connection, CancellationToken cancellationToken)
+    public async Task<bool> ExecuteAsync(IDbConnection connection, IDbTransaction transaction, CancellationToken cancellationToken)
     {
         const string sql = $@"
 INSERT INTO [Games]
@@ -27,6 +27,7 @@ SELECT @@ROWCOUNT;
         var command = new CommandDefinition(
             commandText: sql,
             parameters: this,
+            transaction: transaction,
             cancellationToken: cancellationToken
         );
         var success = await connection.ExecuteScalarAsync<bool>(command);

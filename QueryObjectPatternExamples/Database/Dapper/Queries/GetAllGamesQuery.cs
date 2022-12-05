@@ -9,7 +9,7 @@ namespace QueryObjectPatternExamples.Database.Dapper.Queries;
 
 public class GetAllGamesQuery : IDbQuery<IReadOnlyCollection<Game>>
 {
-    public async Task<IReadOnlyCollection<Game>> ExecuteAsync(IDbConnection connection, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Game>> ExecuteAsync(IDbConnection connection, IDbTransaction transaction, CancellationToken cancellationToken)
     {
         const string sql = $@"
         SELECT 
@@ -20,6 +20,7 @@ public class GetAllGamesQuery : IDbQuery<IReadOnlyCollection<Game>>
         var command = new CommandDefinition(
             commandText: sql,
             parameters: this,
+            transaction: transaction,
             cancellationToken: cancellationToken
         );
         var gameRecords = await connection.QueryAsync<Game>(command);
